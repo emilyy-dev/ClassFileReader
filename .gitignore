@@ -1,0 +1,10 @@
+.bsp/
+target/
+*.class
+*.jar
+
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
