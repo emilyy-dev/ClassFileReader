@@ -30,6 +30,7 @@ class IndentingWriter(private val out: Writer) extends Writer with Indentable {
 
     out.write(buff, from, len - from)
   }
+
   override def flush(): Unit = out.flush()
   override def close(): Unit = out.close()
 }

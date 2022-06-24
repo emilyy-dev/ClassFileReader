@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.attribute
 
-import io.github.emilyydev.classreader.accessflag.ModuleAccessFlag
+import io.github.emilyydev.classreader.accessflag.{AccessFlag, MandatedAccessFlag, OpenAccessFlag, SyntheticAccessFlag}
 import io.github.emilyydev.classreader.attribute.module.{ExportsInfo, OpensInfo, ProvidesInfo, RequiresInfo}
 import io.github.emilyydev.classreader.constantpool.ConstantPool
 
@@ -46,7 +46,7 @@ final case class BootstrapMethodsAttribute(bootstrapMethods: List[BootstrapMetho
 final case class MethodParametersAttribute(parameters: List[MethodParameterInfo]) extends Attribute
 final case class ModuleAttribute(
   nameIndex: Int,
-  accessFlagSet: Set[ModuleAccessFlag],
+  accessFlagSet: Set[AccessFlag],
   versionIndex: Option[Int],
   requiresList: List[RequiresInfo],
   exportsList: List[ExportsInfo],
@@ -60,6 +60,14 @@ final case class NestHostAttribute(hostClassIndex: Int) extends Attribute
 final case class NestMembersAttribute(nestClassIndexes: Array[Int]) extends Attribute
 final case class RecordAttribute(components: List[RecordComponentInfo]) extends Attribute
 final case class PermittedSubclassesAttribute(permittedSubclassIndexes: Array[Int]) extends Attribute
+
+object ModuleAttribute {
+  private[attribute] val LegalFlags: Set[AccessFlag] = Set(
+    OpenAccessFlag,
+    SyntheticAccessFlag,
+    MandatedAccessFlag
+  )
+}
 
 object Attribute {
 
@@ -196,7 +204,7 @@ object Attribute {
         MethodParametersAttribute(methodParameters.toList)
       case Module =>
         val moduleNameIndex = in.readUnsignedShort()
-        val accessFlagSet = ModuleAccessFlag.asSet(in.readUnsignedShort())
+        val accessFlagSet = AccessFlag.asSet(ModuleAttribute.LegalFlags)(in.readUnsignedShort())
         val moduleVersionIndex = in.readUnsignedShort()
         val requiresCount = in.readUnsignedShort()
         val requiresList = (0 until requiresCount).map(_ => RequiresInfo.read(in))

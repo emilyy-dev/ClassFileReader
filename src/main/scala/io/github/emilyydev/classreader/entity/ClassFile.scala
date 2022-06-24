@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.entity
 
-import io.github.emilyydev.classreader.accessflag.ClassAccessFlag
+import io.github.emilyydev.classreader.accessflag.{AbstractAccessFlag, AccessFlag, AnnotationAccessFlag, EnumAccessFlag, FinalAccessFlag, InterfaceAccessFlag, ModuleAccessFlag, PublicAccessFlag, SuperAccessFlag, SyntheticAccessFlag}
 import io.github.emilyydev.classreader.attribute.Attribute
 import io.github.emilyydev.classreader.constantpool.{ConstantInfo, ConstantPool, DoubleConstantInfo, DummyConstantInfo, LongConstantInfo}
 import io.github.emilyydev.classreader.{Indentable, countDigits}
@@ -12,7 +12,7 @@ final case class ClassFile(
   version: Int,
   constantPoolEntryCount: Int,
   constantPool: ConstantPool,
-  accessFlagSet: Set[ClassAccessFlag],
+  accessFlagSet: Set[AccessFlag],
   thisClassIndex: Int,
   superClassIndex: Option[Int],
   interfaceIndexes: Array[Int],
@@ -21,10 +21,10 @@ final case class ClassFile(
   attributes: Map[String, Attribute]
 ) {
   def render(writer: Writer with Indentable): Unit = {
-    val accessFlagNames = accessFlagSet.map(ClassAccessFlag.Names(_)).mkString(" ")
+    val accessFlagNames = accessFlagSet.map(AccessFlag.Names(_)).mkString(" ")
     writer.writeln(constantPool.render(thisClassIndex).replace('/', '.'))
       .writeln(s"Class file version ${version + 44} ($version)")
-      .writeln(s"Access flags (0x${ClassAccessFlag.setAsNumber(accessFlagSet).toHexString}): $accessFlagNames")
+      .writeln(s"Access flags (0x${AccessFlag.setAsNumber(accessFlagSet).toHexString}): $accessFlagNames")
     superClassIndex.map(constantPool.render).map(s"Superclass: ".concat).foreach { s => writer.writeln(s) }
     writer.writeln(s"Direct superinterface count: ${interfaceIndexes.length}")
       .write(interfaceIndexes.map(constantPool.render).mkString(", "))
@@ -79,7 +79,7 @@ object ClassFile {
       ConstantPool(builder.result())
     }
 
-    val accessFlagSet = ClassAccessFlag.asSet(in.readUnsignedShort())
+    val accessFlagSet = AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
     val thisClassIndex = in.readUnsignedShort()
     val superClassIndex = in.readUnsignedShort()
     val interfaceCount = in.readUnsignedShort()
@@ -104,4 +104,16 @@ object ClassFile {
       attributes.toMap
     )
   }
+
+  private val LegalFlags: Set[AccessFlag] = Set(
+    PublicAccessFlag,
+    FinalAccessFlag,
+    SuperAccessFlag,
+    InterfaceAccessFlag,
+    AbstractAccessFlag,
+    SyntheticAccessFlag,
+    AnnotationAccessFlag,
+    EnumAccessFlag,
+    ModuleAccessFlag
+  )
 }

@@ -121,37 +121,53 @@ object ConstantInfo {
     constant: ConstantInfo,
     writer: Writer with Indentable,
     rendered: String
-  ): Unit = constant match {
-    case ClassConstantInfo(nameIndex) => write(writer, "Class", s"#$nameIndex", rendered)
-    case FieldRefConstantInfo(classIndex, nameAndTypeIndex) =>
-      write(writer, "Fieldref", s"#$classIndex.#$nameAndTypeIndex", rendered)
-    case MethodRefConstantInfo(classIndex, nameAndTypeIndex) =>
-      write(writer, "Methodref", s"#$classIndex.#$nameAndTypeIndex", rendered)
-    case InterfaceMethodRefConstantInfo(classIndex, nameAndTypeIndex) =>
-      write(writer, "InterfaceMethodref", s"#$classIndex.#$nameAndTypeIndex", rendered)
-    case StringConstantInfo(valueIndex) => write(writer, "String", s"#$valueIndex", rendered)
-    case IntegerConstantInfo(value) => writer.writeln(s"${padded("Integer")} $value")
-    case FloatConstantInfo(value) => writer.writeln(s"${padded("Float")} $value")
-    case LongConstantInfo(value) => writer.writeln(s"${padded("Long")} $value")
-    case DoubleConstantInfo(value) => writer.writeln(s"${padded("Double")} $value")
-    case NameAndTypeConstantInfo(nameIndex, descriptorIndex) =>
-      write(writer, "NameAndType", s"#$nameIndex:#$descriptorIndex", rendered)
-    case Utf8ConstantInfo(value) => writer.writeln(s"${padded("Utf8")} $value")
-    case MethodHandleConstantInfo(kind, referenceIndex) =>
-      val kindValue = MethodHandleKind.KindMap
-        .withFilter { case (_, v) => v == kind }
-        .map { case (k, _) => k }
-        .head
-      write(writer, "MethodHandle", s"$kindValue:#$referenceIndex", rendered)
-    case MethodTypeConstantInfo(descriptorIndex) =>
-      write(writer, "MethodType", s"#$descriptorIndex", rendered)
-    case DynamicConstantInfo(bootstrapMethodIndex, nameAndTypeIndex) =>
-      write(writer, "Dynamic", s"#$bootstrapMethodIndex:#$nameAndTypeIndex", rendered)
-    case InvokeDynamicConstantInfo(bootstrapMethodIndex, nameAndTypeIndex) =>
-      write(writer, "InvokeDynamic", s"#$bootstrapMethodIndex:#$nameAndTypeIndex", rendered)
-    case ModuleConstantInfo(nameIndex) =>
-      write(writer, "Module", s"#$nameIndex", rendered)
-    case PackageConstantInfo(nameIndex) =>
-      write(writer, "Package", s"#$nameIndex", rendered)
+  ): Unit = {
+    val filteredRendered = filterRendered(rendered)
+    constant match {
+      case ClassConstantInfo(nameIndex) => write(writer, "Class", s"#$nameIndex", filteredRendered)
+      case FieldRefConstantInfo(classIndex, nameAndTypeIndex) =>
+        write(writer, "Fieldref", s"#$classIndex.#$nameAndTypeIndex", filteredRendered)
+      case MethodRefConstantInfo(classIndex, nameAndTypeIndex) =>
+        write(writer, "Methodref", s"#$classIndex.#$nameAndTypeIndex", filteredRendered)
+      case InterfaceMethodRefConstantInfo(classIndex, nameAndTypeIndex) =>
+        write(writer, "InterfaceMethodref", s"#$classIndex.#$nameAndTypeIndex", filteredRendered)
+      case StringConstantInfo(valueIndex) => write(writer, "String", s"#$valueIndex", filteredRendered)
+      case IntegerConstantInfo(value) => writer.writeln(s"${padded("Integer")} $value")
+      case FloatConstantInfo(value) => writer.writeln(s"${padded("Float")} $value")
+      case LongConstantInfo(value) => writer.writeln(s"${padded("Long")} $value")
+      case DoubleConstantInfo(value) => writer.writeln(s"${padded("Double")} $value")
+      case NameAndTypeConstantInfo(nameIndex, descriptorIndex) =>
+        write(writer, "NameAndType", s"#$nameIndex:#$descriptorIndex", filteredRendered)
+      case Utf8ConstantInfo(_) => writer.writeln(s"${padded("Utf8")} $filteredRendered")
+      case MethodHandleConstantInfo(kind, referenceIndex) =>
+        val kindValue = MethodHandleKind.KindMap
+          .withFilter { case (_, v) => v == kind }
+          .map { case (k, _) => k }
+          .head
+        write(writer, "MethodHandle", s"$kindValue:#$referenceIndex", filteredRendered)
+      case MethodTypeConstantInfo(descriptorIndex) =>
+        write(writer, "MethodType", s"#$descriptorIndex", filteredRendered)
+      case DynamicConstantInfo(bootstrapMethodIndex, nameAndTypeIndex) =>
+        write(writer, "Dynamic", s"#$bootstrapMethodIndex:#$nameAndTypeIndex", filteredRendered)
+      case InvokeDynamicConstantInfo(bootstrapMethodIndex, nameAndTypeIndex) =>
+        write(writer, "InvokeDynamic", s"#$bootstrapMethodIndex:#$nameAndTypeIndex", filteredRendered)
+      case ModuleConstantInfo(nameIndex) =>
+        write(writer, "Module", s"#$nameIndex", filteredRendered)
+      case PackageConstantInfo(nameIndex) =>
+        write(writer, "Package", s"#$nameIndex", filteredRendered)
+    }
+  }
+
+  private def filterRendered(str: String): String = str.flatMap(filterRendered)
+  private def filterRendered(c: Char): String = c match {
+    case '"' => "\\\""
+    case '\\' => "\\\\"
+    case '\b' => "\\b"
+    case '\f' => "\\f"
+    case '\n' => "\\n"
+    case '\r' => "\\r"
+    case '\t' => "\\t"
+    case c if c.isControl => "\\u%04x".format(c.toInt)
+    case c => Character.toString(c)
   }
 }

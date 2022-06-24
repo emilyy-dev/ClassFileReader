@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.attribute
 
-import io.github.emilyydev.classreader.accessflag.InnerClassAccessFlag
+import io.github.emilyydev.classreader.accessflag.{AbstractAccessFlag, AccessFlag, AnnotationAccessFlag, EnumAccessFlag, FinalAccessFlag, InterfaceAccessFlag, PrivateAccessFlag, ProtectedAccessFlag, PublicAccessFlag, StaticAccessFlag, SyntheticAccessFlag}
 
 import java.io.DataInput
 
@@ -8,7 +8,7 @@ final case class InnerClassInfo(
   innerClassInfoIndex: Int,
   outerClassInfoIndex: Option[Int],
   innerNameIndex: Option[Int],
-  accessFlagSet: Set[InnerClassAccessFlag]
+  accessFlagSet: Set[AccessFlag]
 )
 
 object InnerClassInfo {
@@ -16,7 +16,7 @@ object InnerClassInfo {
     val innerClassInfoIndex = in.readUnsignedShort()
     val outerClassInfoIndex = in.readUnsignedShort()
     val innerNameIndex = in.readUnsignedShort()
-    val accessFlagSet = InnerClassAccessFlag.asSet(in.readUnsignedShort())
+    val accessFlagSet = AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
     InnerClassInfo(
       innerClassInfoIndex,
       if (outerClassInfoIndex == 0) None else Some(outerClassInfoIndex),
@@ -24,4 +24,17 @@ object InnerClassInfo {
       accessFlagSet
     )
   }
+
+  private val LegalFlags: Set[AccessFlag] = Set(
+    PublicAccessFlag,
+    PrivateAccessFlag,
+    ProtectedAccessFlag,
+    StaticAccessFlag,
+    FinalAccessFlag,
+    InterfaceAccessFlag,
+    AbstractAccessFlag,
+    SyntheticAccessFlag,
+    AnnotationAccessFlag,
+    EnumAccessFlag
+  )
 }
