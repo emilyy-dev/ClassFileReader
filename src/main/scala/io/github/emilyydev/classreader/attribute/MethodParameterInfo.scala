@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.attribute
 
-import io.github.emilyydev.classreader.accessflag.{AccessFlag, FinalAccessFlag, MandatedAccessFlag, SyntheticAccessFlag}
+import io.github.emilyydev.classreader.accessflag.{AccessFlag, AccessFlagHolder, FinalAccessFlag, MandatedAccessFlag, SyntheticAccessFlag}
 
 import java.io.DataInput
 
@@ -9,14 +9,14 @@ final case class MethodParameterInfo(
   accessFlagSet: Set[AccessFlag]
 )
 
-object MethodParameterInfo {
+object MethodParameterInfo extends AccessFlagHolder {
   def read(in: DataInput): MethodParameterInfo =
     MethodParameterInfo(
       in.readUnsignedShort(),
-      AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
+      ToAccessFlagSet(in.readUnsignedShort())
     )
 
-  private val LegalFlags: Set[AccessFlag] = Set(
+  override val LegalFlags: Set[AccessFlag] = Set(
     FinalAccessFlag,
     SyntheticAccessFlag,
     MandatedAccessFlag

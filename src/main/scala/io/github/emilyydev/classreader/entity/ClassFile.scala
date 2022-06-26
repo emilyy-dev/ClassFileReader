@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.entity
 
-import io.github.emilyydev.classreader.accessflag.{AbstractAccessFlag, AccessFlag, AnnotationAccessFlag, EnumAccessFlag, FinalAccessFlag, InterfaceAccessFlag, ModuleAccessFlag, PublicAccessFlag, SuperAccessFlag, SyntheticAccessFlag}
+import io.github.emilyydev.classreader.accessflag.{AbstractAccessFlag, AccessFlag, AccessFlagHolder, AnnotationAccessFlag, EnumAccessFlag, FinalAccessFlag, InterfaceAccessFlag, ModuleAccessFlag, PublicAccessFlag, SuperAccessFlag, SyntheticAccessFlag}
 import io.github.emilyydev.classreader.attribute.Attribute
 import io.github.emilyydev.classreader.constantpool.{ConstantInfo, ConstantPool, DoubleConstantInfo, DummyConstantInfo, LongConstantInfo}
 import io.github.emilyydev.classreader.{Indentable, countDigits}
@@ -36,12 +36,12 @@ final case class ClassFile(
       .newLine()
       .increaseIndentation()
 
-    val constantPoolSizeDigitCount = countDigits(constantPool.pool.size)
+    val constantPoolSizeDigitCount = 1 + countDigits(constantPool.pool.size)
     for ((constant, index) <- constantPool.pool.zipWithIndex) {
       constant match {
         case DummyConstantInfo =>
         case _ =>
-          writer.write(s"%${constantPoolSizeDigitCount}d: ".format(index))
+          writer.write(s"%${constantPoolSizeDigitCount}s: ".format(s"#$index"))
           constant.render(writer, constantPool.render(index))
       }
     }
@@ -51,7 +51,7 @@ final case class ClassFile(
   }
 }
 
-object ClassFile {
+object ClassFile extends AccessFlagHolder {
   def read(in: DataInput): ClassFile = {
     /*val minorVersion =*/ in.readUnsignedShort()
     val majorVersion = in.readUnsignedShort() - 44
@@ -79,7 +79,7 @@ object ClassFile {
       ConstantPool(builder.result())
     }
 
-    val accessFlagSet = AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
+    val accessFlagSet = ToAccessFlagSet(in.readUnsignedShort())
     val thisClassIndex = in.readUnsignedShort()
     val superClassIndex = in.readUnsignedShort()
     val interfaceCount = in.readUnsignedShort()
@@ -105,7 +105,7 @@ object ClassFile {
     )
   }
 
-  private val LegalFlags: Set[AccessFlag] = Set(
+  override val LegalFlags: Set[AccessFlag] = Set(
     PublicAccessFlag,
     FinalAccessFlag,
     SuperAccessFlag,

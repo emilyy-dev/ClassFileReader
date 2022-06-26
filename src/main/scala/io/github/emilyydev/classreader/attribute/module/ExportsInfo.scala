@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.attribute.module
 
-import io.github.emilyydev.classreader.accessflag.{AccessFlag, MandatedAccessFlag, SyntheticAccessFlag}
+import io.github.emilyydev.classreader.accessflag.{AccessFlag, AccessFlagHolder, MandatedAccessFlag, SyntheticAccessFlag}
 
 import java.io.DataInput
 
@@ -10,10 +10,10 @@ final case class ExportsInfo(
   exportsToModuleIndexes: Array[Int]
 )
 
-object ExportsInfo {
+object ExportsInfo extends AccessFlagHolder {
   def read(in: DataInput): ExportsInfo = {
     val exportsPackageIndex = in.readUnsignedShort()
-    val accessFlagSet = AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
+    val accessFlagSet = ToAccessFlagSet(in.readUnsignedShort())
     val exportsToModuleCount = in.readUnsignedShort()
     val exportsToModuleIndexes = (0 until exportsToModuleCount).map(_ => in.readUnsignedShort())
     ExportsInfo(
@@ -23,7 +23,7 @@ object ExportsInfo {
     )
   }
 
-  private val LegalFlags: Set[AccessFlag] = Set(
+  override val LegalFlags: Set[AccessFlag] = Set(
     SyntheticAccessFlag,
     MandatedAccessFlag
   )

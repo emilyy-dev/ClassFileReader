@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.entity
 
-import io.github.emilyydev.classreader.accessflag.{AbstractAccessFlag, AccessFlag, BridgeAccessFlag, FinalAccessFlag, NativeAccessFlag, PrivateAccessFlag, ProtectedAccessFlag, PublicAccessFlag, StaticAccessFlag, StrictAccessFlag, SynchronizedAccessFlag, SyntheticAccessFlag, VarargsAccessFlag}
+import io.github.emilyydev.classreader.accessflag.{AbstractAccessFlag, AccessFlag, AccessFlagHolder, BridgeAccessFlag, FinalAccessFlag, NativeAccessFlag, PrivateAccessFlag, ProtectedAccessFlag, PublicAccessFlag, StaticAccessFlag, StrictAccessFlag, SynchronizedAccessFlag, SyntheticAccessFlag, VarargsAccessFlag}
 import io.github.emilyydev.classreader.attribute.Attribute
 import io.github.emilyydev.classreader.constantpool.ConstantPool
 
@@ -13,9 +13,9 @@ final case class Method(
   attributes: Map[String, Attribute]
 )
 
-object Method {
+object Method extends AccessFlagHolder {
   def read(in: DataInput, constantPool: ConstantPool): Method = {
-    val accessFlagSet = AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
+    val accessFlagSet = ToAccessFlagSet(in.readUnsignedShort())
     val nameIndex = in.readUnsignedShort()
     val descriptorIndex = in.readUnsignedShort()
     val attributeCount = in.readUnsignedShort()
@@ -23,7 +23,7 @@ object Method {
     Method(accessFlagSet, nameIndex, descriptorIndex, attributes.toMap)
   }
 
-  private val LegalFlags: Set[AccessFlag] = Set(
+  override val LegalFlags: Set[AccessFlag] = Set(
     PublicAccessFlag,
     PrivateAccessFlag,
     ProtectedAccessFlag,

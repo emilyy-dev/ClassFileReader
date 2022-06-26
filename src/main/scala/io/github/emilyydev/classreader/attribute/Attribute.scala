@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.attribute
 
-import io.github.emilyydev.classreader.accessflag.{AccessFlag, MandatedAccessFlag, OpenAccessFlag, SyntheticAccessFlag}
+import io.github.emilyydev.classreader.accessflag.{AccessFlag, AccessFlagHolder, MandatedAccessFlag, OpenAccessFlag, SyntheticAccessFlag}
 import io.github.emilyydev.classreader.attribute.module.{ExportsInfo, OpensInfo, ProvidesInfo, RequiresInfo}
 import io.github.emilyydev.classreader.constantpool.ConstantPool
 
@@ -61,8 +61,8 @@ final case class NestMembersAttribute(nestClassIndexes: Array[Int]) extends Attr
 final case class RecordAttribute(components: List[RecordComponentInfo]) extends Attribute
 final case class PermittedSubclassesAttribute(permittedSubclassIndexes: Array[Int]) extends Attribute
 
-object ModuleAttribute {
-  private[attribute] val LegalFlags: Set[AccessFlag] = Set(
+object ModuleAttribute extends AccessFlagHolder {
+  override val LegalFlags: Set[AccessFlag] = Set(
     OpenAccessFlag,
     SyntheticAccessFlag,
     MandatedAccessFlag
@@ -204,7 +204,7 @@ object Attribute {
         MethodParametersAttribute(methodParameters.toList)
       case Module =>
         val moduleNameIndex = in.readUnsignedShort()
-        val accessFlagSet = AccessFlag.asSet(ModuleAttribute.LegalFlags)(in.readUnsignedShort())
+        val accessFlagSet = ModuleAttribute.ToAccessFlagSet(in.readUnsignedShort())
         val moduleVersionIndex = in.readUnsignedShort()
         val requiresCount = in.readUnsignedShort()
         val requiresList = (0 until requiresCount).map(_ => RequiresInfo.read(in))

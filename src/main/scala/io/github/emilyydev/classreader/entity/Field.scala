@@ -1,6 +1,6 @@
 package io.github.emilyydev.classreader.entity
 
-import io.github.emilyydev.classreader.accessflag.{AccessFlag, EnumAccessFlag, FinalAccessFlag, PrivateAccessFlag, ProtectedAccessFlag, PublicAccessFlag, StaticAccessFlag, SyntheticAccessFlag, TransientAccessFlag, VolatileAccessFlag}
+import io.github.emilyydev.classreader.accessflag.{AccessFlag, AccessFlagHolder, EnumAccessFlag, FinalAccessFlag, PrivateAccessFlag, ProtectedAccessFlag, PublicAccessFlag, StaticAccessFlag, SyntheticAccessFlag, TransientAccessFlag, VolatileAccessFlag}
 import io.github.emilyydev.classreader.attribute.Attribute
 import io.github.emilyydev.classreader.constantpool.ConstantPool
 
@@ -13,9 +13,9 @@ final case class Field(
   attributes: Map[String, Attribute]
 )
 
-object Field {
+object Field extends AccessFlagHolder {
   def read(in: DataInput, constantPool: ConstantPool): Field = {
-    val accessFlagSet = AccessFlag.asSet(LegalFlags)(in.readUnsignedShort())
+    val accessFlagSet = ToAccessFlagSet(in.readUnsignedShort())
     val nameIndex = in.readUnsignedShort()
     val descriptorIndex = in.readUnsignedShort()
     val attributeCount = in.readUnsignedShort()
@@ -23,7 +23,7 @@ object Field {
     Field(accessFlagSet, nameIndex, descriptorIndex, attributes.toMap)
   }
 
-  private val LegalFlags: Set[AccessFlag] = Set(
+  override val LegalFlags: Set[AccessFlag] = Set(
     PublicAccessFlag,
     PrivateAccessFlag,
     ProtectedAccessFlag,
