@@ -83,13 +83,21 @@ object ClassFile extends AccessFlagHolder {
     val thisClassIndex = in.readUnsignedShort()
     val superClassIndex = in.readUnsignedShort()
     val interfaceCount = in.readUnsignedShort()
-    val interfaceIndexes = (0 until interfaceCount).map(_ => in.readUnsignedShort())
+    val interfaceIndexes = for {
+      _ <- 0 until interfaceCount
+    } yield in.readUnsignedShort()
     val fieldCount = in.readUnsignedShort()
-    val fields = (0 until fieldCount).map(_ => Field.read(in, constantPool))
+    val fields = for {
+      _ <- 0 until fieldCount
+    } yield Field.read(in, constantPool)
     val methodCount = in.readUnsignedShort()
-    val methods = (0 until methodCount).map(_ => Method.read(in, constantPool))
+    val methods = for {
+      _ <- 0 until methodCount
+    } yield Method.read(in, constantPool)
     val attributeCount = in.readUnsignedShort()
-    val attributes = (0 until attributeCount).map(_ => Attribute.read(in, constantPool))
+    val attributes = for {
+      _ <- 0 until attributeCount
+    } yield Attribute.read(in, constantPool)
 
     ClassFile(
       majorVersion,

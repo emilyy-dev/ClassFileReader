@@ -50,7 +50,9 @@ object AnnotationValue {
       case AnnotationType => AnnotationElementValue(AnnotationInfo.read(in))
       case ArrayType =>
         val valuesNumber = in.readUnsignedShort()
-        val values = (0 until valuesNumber).map(_ => AnnotationValue.read(in))
+        val values = for {
+          _ <- 0 until valuesNumber
+        } yield AnnotationValue.read(in)
         ArrayElementValue(values.toList)
     }
   }

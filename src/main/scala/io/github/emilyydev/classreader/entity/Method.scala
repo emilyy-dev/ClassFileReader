@@ -19,7 +19,9 @@ object Method extends AccessFlagHolder {
     val nameIndex = in.readUnsignedShort()
     val descriptorIndex = in.readUnsignedShort()
     val attributeCount = in.readUnsignedShort()
-    val attributes = (0 until attributeCount).map(_ => Attribute.read(in, constantPool))
+    val attributes = for {
+      _ <- 0 until attributeCount
+    } yield Attribute.read(in, constantPool)
     Method(accessFlagSet, nameIndex, descriptorIndex, attributes.toMap)
   }
 

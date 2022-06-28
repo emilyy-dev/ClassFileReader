@@ -15,7 +15,9 @@ object OpensInfo extends AccessFlagHolder {
     val opensPackageIndex = in.readUnsignedShort()
     val accessFlagSet = ToAccessFlagSet(in.readUnsignedShort())
     val opensToModuleCount = in.readUnsignedShort()
-    val opensToModuleIndexes = (0 until opensToModuleCount).map(_ => in.readUnsignedShort())
+    val opensToModuleIndexes = for {
+      - <- 0 until opensToModuleCount
+    } yield in.readUnsignedShort()
     OpensInfo(opensPackageIndex, accessFlagSet, opensToModuleIndexes.toArray)
   }
 

@@ -15,7 +15,9 @@ object ExportsInfo extends AccessFlagHolder {
     val exportsPackageIndex = in.readUnsignedShort()
     val accessFlagSet = ToAccessFlagSet(in.readUnsignedShort())
     val exportsToModuleCount = in.readUnsignedShort()
-    val exportsToModuleIndexes = (0 until exportsToModuleCount).map(_ => in.readUnsignedShort())
+    val exportsToModuleIndexes = for {
+      _ <- 0 until exportsToModuleCount
+    } yield in.readUnsignedShort()
     ExportsInfo(
       exportsPackageIndex,
       accessFlagSet,

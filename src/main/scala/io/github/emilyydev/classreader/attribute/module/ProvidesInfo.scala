@@ -11,7 +11,9 @@ object ProvidesInfo {
   def read(in: DataInput): ProvidesInfo = {
     val serviceIndex = in.readUnsignedShort()
     val serviceProviderCount = in.readUnsignedShort()
-    val serviceProviderIndexes= (0 until serviceProviderCount).map(_ => in.readUnsignedShort())
+    val serviceProviderIndexes = for {
+      _ <- 0 until serviceProviderCount
+    } yield in.readUnsignedShort()
     ProvidesInfo(serviceIndex, serviceProviderIndexes.toArray)
   }
 }

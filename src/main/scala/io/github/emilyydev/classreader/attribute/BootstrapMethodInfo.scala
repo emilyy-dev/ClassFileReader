@@ -11,8 +11,9 @@ object BootstrapMethodInfo {
   def read(in: DataInput): BootstrapMethodInfo = {
     val bootstrapMethodIndex = in.readUnsignedShort()
     val bootstrapArgumentsNumber = in.readUnsignedShort()
-    val bootstrapArgumentIndexes = (0 until bootstrapArgumentsNumber)
-      .map(_ => in.readUnsignedShort())
+    val bootstrapArgumentIndexes = for {
+      _ <- 0 until bootstrapArgumentsNumber
+    } yield in.readUnsignedShort()
     BootstrapMethodInfo(bootstrapMethodIndex, bootstrapArgumentIndexes.toArray)
   }
 }

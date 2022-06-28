@@ -114,9 +114,13 @@ object Attribute {
         val code = new Array[Byte](codeLength)
         in.readFully(code)
         val exceptionCount = in.readUnsignedShort()
-        val exceptionTable = (0 until exceptionCount).map(_ => ExceptionInfo.read(in))
+        val exceptionTable = for {
+          _ <- 0 until exceptionCount
+        } yield ExceptionInfo.read(in)
         val attributeCount = in.readUnsignedShort()
-        val attributes = (0 until attributeCount).map(_ => Attribute.read(in, constantPool))
+        val attributes = for {
+          _ <- 0 until attributeCount
+        } yield Attribute.read(in, constantPool)
         CodeAttribute(
           maxStack,
           maxLocals,
@@ -129,11 +133,15 @@ object Attribute {
       */
       case Exceptions =>
         val exceptionCount = in.readUnsignedShort()
-        val exceptionIndexes = (0 until exceptionCount).map(_ => in.readUnsignedShort())
+        val exceptionIndexes = for {
+          _ <- 0 until exceptionCount
+        } yield in.readUnsignedShort()
         ExceptionsAttribute(exceptionIndexes.toArray)
       case InnerClasses =>
         val innerClassCount = in.readUnsignedShort()
-        val innerClasses = (0 until innerClassCount).map(_ => InnerClassInfo.read(in))
+        val innerClasses = for {
+          _ <- 0 until innerClassCount
+        } yield InnerClassInfo.read(in)
         InnerClassesAttribute(innerClasses.toList)
       case EnclosingMethod =>
         EnclosingMethodAttribute(in.readUnsignedShort(), in.readUnsignedShort())
@@ -146,7 +154,9 @@ object Attribute {
         SourceDebugExtensionAttribute(debugExtension)
       case LineNumberTable =>
         val lineNumberTableLength = in.readUnsignedShort()
-        val lineNumberTable = (0 until lineNumberTableLength).map(_ => LineNumberInfo.read(in))
+        val lineNumberTable = for {
+          _ <- 0 until lineNumberTableLength
+        } yield LineNumberInfo.read(in)
         LineNumberTableAttribute(lineNumberTable.toList)
       case LocalVariableTable =>
         val localVariableTableLength = in.readUnsignedShort()
@@ -179,8 +189,9 @@ object Attribute {
         LocalVariableTableAttribute(localVariableTable)
       case LocalVariableTypeTable =>
         val localVariableTypeTableLength = in.readUnsignedShort()
-        val localVariableTypeTable = (0 until localVariableTypeTableLength)
-          .map(_ => LocalVariableTypeInfo.read(in))
+        val localVariableTypeTable = for {
+          _ <- 0 until localVariableTypeTableLength
+        } yield LocalVariableTypeInfo.read(in)
         LocalVariableTypeTableAttribute(localVariableTypeTable.toList)
       case Deprecated => DeprecatedAttribute
       case RuntimeVisibleAnnotations => RuntimeVisibleAnnotationsAttribute(readAnnotations(in))
@@ -196,26 +207,40 @@ object Attribute {
       case AnnotationDefault => AnnotationDefaultAttribute(AnnotationValue.read(in))
       case BootstrapMethods =>
         val bootstrapMethodCount = in.readUnsignedShort()
-        val bootstrapMethods = (0 until bootstrapMethodCount).map(_ => BootstrapMethodInfo.read(in))
+        val bootstrapMethods = for {
+          _ <- 0 until bootstrapMethodCount
+        } yield BootstrapMethodInfo.read(in)
         BootstrapMethodsAttribute(bootstrapMethods.toList)
       case MethodParameters =>
         val methodParameterCount = in.readUnsignedByte()
-        val methodParameters = (0 until methodParameterCount).map(_ => MethodParameterInfo.read(in))
+        val methodParameters = for {
+          _ <- 0 until methodParameterCount
+        } yield MethodParameterInfo.read(in)
         MethodParametersAttribute(methodParameters.toList)
       case Module =>
         val moduleNameIndex = in.readUnsignedShort()
         val accessFlagSet = ModuleAttribute.ToAccessFlagSet(in.readUnsignedShort())
         val moduleVersionIndex = in.readUnsignedShort()
         val requiresCount = in.readUnsignedShort()
-        val requiresList = (0 until requiresCount).map(_ => RequiresInfo.read(in))
+        val requiresList = for {
+          _ <- 0 until requiresCount
+        } yield RequiresInfo.read(in)
         val exportsCount = in.readUnsignedShort()
-        val exportsList = (0 until exportsCount).map(_ => ExportsInfo.read(in))
+        val exportsList = for {
+          _ <- 0 until exportsCount
+        } yield ExportsInfo.read(in)
         val opensCount = in.readUnsignedShort()
-        val opensList = (0 until opensCount).map(_ => OpensInfo.read(in))
+        val opensList = for {
+          _ <- 0 until opensCount
+        } yield OpensInfo.read(in)
         val usesCount = in.readUnsignedShort()
-        val usesList = (0 until usesCount).map(_ => in.readUnsignedShort())
+        val usesList = for {
+          _ <- 0 until usesCount
+        } yield in.readUnsignedShort()
         val providesCount = in.readUnsignedShort()
-        val providesList = (0 until providesCount).map(_ => ProvidesInfo.read(in))
+        val providesList = for {
+          _ <- 0 until providesCount
+        } yield ProvidesInfo.read(in)
         ModuleAttribute(
           moduleNameIndex,
           accessFlagSet,
@@ -228,22 +253,29 @@ object Attribute {
         )
       case ModulePackages =>
         val packageCount = in.readUnsignedShort()
-        val packages = (0 until packageCount).map(_ => in.readUnsignedShort())
+        val packages = for {
+          _ <- 0 until packageCount
+        } yield in.readUnsignedShort()
         ModulePackagesAttribute(packages.toArray)
       case ModuleMainClass => ModuleMainClassAttribute(in.readUnsignedShort())
       case NestHost => NestHostAttribute(in.readUnsignedShort())
       case NestMembers =>
         val nestMemberCount = in.readUnsignedShort()
-        val nestMembers = (0 until nestMemberCount).map(_ => in.readUnsignedShort())
+        val nestMembers = for {
+          _ <- 0 until nestMemberCount
+        } yield in.readUnsignedShort()
         NestMembersAttribute(nestMembers.toArray)
       case Record =>
         val recordComponentCount = in.readUnsignedShort()
-        val recordComponents = (0 until recordComponentCount)
-          .map(_ => RecordComponentInfo.read(in, constantPool))
+        val recordComponents = for {
+          _ <- 0 until recordComponentCount
+        } yield RecordComponentInfo.read(in, constantPool)
         RecordAttribute(recordComponents.toList)
       case PermittedSubclasses =>
         val permittedSubclassCount = in.readUnsignedShort()
-        val permittedSubclasses = (0 until permittedSubclassCount).map(_ => in.readUnsignedShort())
+        val permittedSubclasses = for {
+          _ <- 0 until permittedSubclassCount
+        } yield in.readUnsignedShort()
         PermittedSubclassesAttribute(permittedSubclasses.toArray)
 
       case _ =>
@@ -257,13 +289,17 @@ object Attribute {
 
   private def readAnnotations(in: DataInput): List[AnnotationInfo] = {
     val annotationsNumber = in.readUnsignedShort()
-    val annotations = (0 until annotationsNumber).map(_ => AnnotationInfo.read(in))
+    val annotations = for {
+      _ <- 0 until annotationsNumber
+    } yield AnnotationInfo.read(in)
     annotations.toList
   }
 
   private def readParameterAnnotations(in: DataInput): List[List[AnnotationInfo]] = {
     val parametersNumber = in.readUnsignedByte()
-    val parameterAnnotations = (0 until parametersNumber).map(_ => readAnnotations(in))
+    val parameterAnnotations = for {
+      _ <- 0 until parametersNumber
+    } yield readAnnotations(in)
     parameterAnnotations.toList
   }
 }

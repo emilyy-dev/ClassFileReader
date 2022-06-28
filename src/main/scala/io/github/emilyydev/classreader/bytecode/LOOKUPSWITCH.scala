@@ -13,7 +13,9 @@ case object LOOKUPSWITCH extends Instruction {
     val lookupSwitchPosition = codeBuffer.position() - 1
     val default = adjustAlignment(codeBuffer).getInt()
     val pairCount = codeBuffer.getInt()
-    val matchOffsetPairs = (0 until pairCount).map(_ => (codeBuffer.getInt(), codeBuffer.getInt()))
+    val matchOffsetPairs = for {
+      _ <- 0 until pairCount
+    } yield (codeBuffer.getInt(), codeBuffer.getInt())
 
     writer.write(mnemonic)
     for ((key, offset) <- matchOffsetPairs) {
